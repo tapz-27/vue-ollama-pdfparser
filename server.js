@@ -117,11 +117,17 @@ app.post('/api/ask', async (req, res) => {
         logger.info('ASK', 'Streaming completed');
 
     } catch (error) {
+        if (error.message === 'Request cancelled by user') {
+            logger.info('ASK', 'Request was cancelled by the client');
+            return;
+        }
         logger.error('ASK', 'Question processing failed', error);
-        res.status(500).json({
-            error: 'Failed to process question',
-            message: error.message
-        });
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: 'Failed to process question',
+                message: error.message
+            });
+        }
     }
 });
 

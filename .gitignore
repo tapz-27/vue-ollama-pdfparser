@@ -6,3 +6,4 @@ dist-ssr
 uploads
 *.log
 npm-debug.log*
+vector_store.json
