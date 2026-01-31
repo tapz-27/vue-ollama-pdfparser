@@ -24,6 +24,7 @@
       </div>
       <div class="main-content">
         <ChatInterface />
+        <ChatInput />
       </div>
     </main>
   </div>
@@ -32,6 +33,7 @@
 <script setup>
 import PdfUpload from './components/PdfUpload.vue';
 import ChatInterface from './components/ChatInterface.vue';
+import ChatInput from './components/ChatInput.vue';
 import StatusPanel from './components/StatusPanel.vue';
 import { useChatStore } from './stores/chatStore';
 
@@ -52,9 +54,12 @@ body {
 }
 
 #app {
-  max-width: 1400px;
+  width: 90vw; /* Force width */
   margin: 0 auto;
   padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
@@ -71,42 +76,40 @@ h1 {
 
 .layout-grid {
   display: grid;
-  grid-template-columns: 350px 1fr; /* Fixed width sidebar, flexible chat */
+  grid-template-columns: 350px 1fr;
   gap: 20px;
   align-items: start;
 }
 
 .main-content {
-  background: #1e1e1e;
-  padding: 20px;
-  border: 1px solid #333;
+  /* background & border removed */
   border-radius: 8px;
-  min-height: calc(100vh - 140px); /* Take full viewport height minus header/padding */
   display: flex;
   flex-direction: column;
+  min-height: calc(100vh - 140px); /* Fill screen so input sits at bottom */
+  position: relative;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  position: sticky; /* Make it stick */
+  position: sticky;
   top: 20px;
-  height: calc(100vh - 40px); /* Full height to contain scrollable areas if needed */
+  height: auto;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
-
-/* Sidebar components usually have their own backgrounds, so we might not need a container bg here,
-   but we can check individual components */
 
 @media (max-width: 900px) {
   .layout-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
   
   .sidebar {
-    position: static;
     height: auto;
+    max-height: 300px; /* Limit sidebar height on mobile */
   }
 }
 
