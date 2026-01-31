@@ -100,12 +100,6 @@ The application will be available at:
 - **LLM**: Ollama (llama3.1, nomic-embed-text)
 - **Build Tool**: Vite
 
-## Code Quality
-
-- Maximum nesting depth: 3 levels
-- Minimalist UI design
-- Comprehensive debug logging
-
 ## Project Structure
 
 ```
