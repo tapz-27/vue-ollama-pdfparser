@@ -13,8 +13,12 @@
       </div>
       <div v-else class="upload-success">
         <p>{{ pdfStore.fileName }}</p>
-        <p class="file-info">{{ formatFileSize(pdfStore.fileSize) }} - {{ pdfStore.pageCount }} pages - {{ pdfStore.chunkCount }} chunks</p>
-        <button @click.stop="pdfStore.clearPdf" class="clear-btn">Clear</button>
+        <p class="file-info">
+            <span v-if="pdfStore.fileSize">{{ formatFileSize(pdfStore.fileSize) }} - </span>
+            <span v-if="pdfStore.pageCount">{{ pdfStore.pageCount }} pages - </span>
+            {{ pdfStore.chunkCount }} chunks
+        </p>
+        <button @click.stop="pdfStore.clearPdf" class="clear-btn">Upload New PDF</button>
       </div>
     </div>
     <div v-if="pdfStore.isProcessing" class="processing">
@@ -27,11 +31,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { usePdfStore } from '@/stores/pdfStore';
 
 const pdfStore = usePdfStore();
 const fileInput = ref(null);
+
+onMounted(() => {
+  pdfStore.checkServerStatus();
+});
 
 const triggerFileInput = () => {
   if (!pdfStore.isProcessed) {
@@ -57,6 +65,7 @@ const handleDrop = async (event) => {
 };
 
 const formatFileSize = (bytes) => {
+  if (!bytes || bytes === 0) return 'Cached';
   if (bytes < 1024) {
     return bytes + ' B';
   }
@@ -73,53 +82,56 @@ const formatFileSize = (bytes) => {
 }
 
 .upload-area {
-  border: 2px dashed #ccc;
+  border: 2px dashed #444;
   padding: 40px;
   text-align: center;
   cursor: pointer;
-  background: #fafafa;
+  background: #1e1e1e;
+  transition: all 0.2s;
 }
 
 .upload-area:hover {
-  border-color: #999;
-  background: #f5f5f5;
+  border-color: #007acc;
+  background: #252526;
 }
 
 .upload-prompt p {
   margin: 0;
-  color: #666;
+  color: #aaa;
 }
 
 .upload-success {
-  color: #333;
+  color: #e0e0e0;
 }
 
 .file-info {
   font-size: 0.9em;
-  color: #666;
+  color: #888;
   margin-top: 5px;
 }
 
 .clear-btn {
   margin-top: 10px;
   padding: 5px 15px;
-  background: #fff;
-  border: 1px solid #ccc;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .clear-btn:hover {
-  background: #f0f0f0;
+  background: #444;
 }
 
 .processing {
   margin-top: 10px;
-  color: #666;
+  color: #aaa;
   font-style: italic;
 }
 
 .error {
   margin-top: 10px;
-  color: #d00;
+  color: #ff5555;
 }
 </style>

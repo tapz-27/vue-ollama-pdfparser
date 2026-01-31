@@ -52,7 +52,12 @@ app.post('/api/upload', upload.single('pdf'), async (req, res) => {
             ...result
         });
     } catch (error) {
-        logger.error('UPLOAD', 'Upload processing failed', error);
+        logger.error('UPLOAD', 'Upload processing failed', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        console.error('Upload error details:', error);
         res.status(500).json({
             error: 'Failed to process PDF',
             message: error.message
@@ -71,12 +76,46 @@ app.post('/api/ask', async (req, res) => {
 
         logger.info('ASK', 'Question received', { question });
 
-        const result = await ragService.askQuestion(question);
+        // Create an AbortController for this request
+        const controller = new AbortController();
 
-        res.json({
-            success: true,
-            ...result
+        // Listen for client disconnect
+        res.on('close', () => {
+            logger.info('ASK', 'Client disconnected, cancelling request');
+            controller.abort();
         });
+
+        // Pass the signal to the service
+        // Expect a stream result now
+        const { stream, sourceDocuments } = await ragService.askQuestion(question, controller.signal);
+
+        // Set headers for streaming
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        // Send sources first as a JSON line
+        res.write(JSON.stringify({ type: 'sources', data: sourceDocuments }) + '\n');
+
+        // Iterate over the stream
+        for await (const chunk of stream) {
+            // Check for client disconnect to break loop
+            if (controller.signal.aborted) break;
+
+            // LangChain chunk is usually a string or object depending on model
+            // For Ollama it's usually just content string
+            const content = typeof chunk === 'string' ? chunk : chunk.content;
+
+            if (content) {
+                res.write(JSON.stringify({ type: 'token', content: content }) + '\n');
+            }
+        }
+
+        // Send done signal
+        res.write(JSON.stringify({ type: 'done' }) + '\n');
+        res.end();
+
+        logger.info('ASK', 'Streaming completed');
+
     } catch (error) {
         logger.error('ASK', 'Question processing failed', error);
         res.status(500).json({
@@ -85,6 +124,40 @@ app.post('/api/ask', async (req, res) => {
         });
     }
 });
+
+app.get('/api/logs', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const onLog = (log) => {
+        res.write(`data: ${JSON.stringify(log)}\n\n`);
+    };
+
+    logger.on('log', onLog);
+
+    req.on('close', () => {
+        logger.off('log', onLog);
+    });
+
+});
+
+app.get('/api/status', (req, res) => {
+    try {
+
+        const count = ragService.getDocumentCount();
+        const metadata = ragService.getMetadata();
+
+        res.json({
+            ready: count > 0,
+            documentCount: count,
+            metadata: metadata
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 app.listen(PORT, () => {
     logger.info('SERVER', `Server running on http://localhost:${PORT}`);

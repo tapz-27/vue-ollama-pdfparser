@@ -12,13 +12,17 @@
   },
   "dependencies": {
     "@langchain/community": "^1.1.10",
+    "@langchain/core": "^1.1.18",
+    "@langchain/ollama": "^1.2.2",
+    "@langchain/textsplitters": "^1.0.1",
     "axios": "^1.13.4",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "langchain": "^1.2.16",
+    "marked": "^17.0.1",
     "multer": "^2.0.2",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.1",
     "pinia": "^3.0.4",
     "vue": "^3.5.24"
   },

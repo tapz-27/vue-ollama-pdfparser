@@ -5,8 +5,11 @@ const LOG_LEVELS = {
     ERROR: 'ERROR'
 };
 
-class Logger {
+import { EventEmitter } from 'events';
+
+class Logger extends EventEmitter {
     constructor() {
+        super();
         this.startTimes = new Map();
     }
 
@@ -16,7 +19,7 @@ class Logger {
 
     log(level, operation, message, data = null) {
         const logEntry = {
-            timestamp: this.formatTimestamp(),
+            // timestamp: this.formatTimestamp(),
             level,
             operation,
             message
@@ -28,6 +31,10 @@ class Logger {
 
         const logString = JSON.stringify(logEntry);
         console.log(logString);
+
+        // Emit the log event for SSE
+        this.emit('log', logEntry);
+
         return logEntry;
     }
 

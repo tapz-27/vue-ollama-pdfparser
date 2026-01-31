@@ -28,11 +28,11 @@ export const usePdfStore = defineStore('pdf', {
                     body: formData
                 });
 
-                if (!response.ok) {
-                    throw new Error('Upload failed');
-                }
-
                 const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || data.error || 'Upload failed');
+                }
 
                 this.uploadedFile = file;
                 this.pageCount = data.pageCount;
@@ -42,6 +42,7 @@ export const usePdfStore = defineStore('pdf', {
 
                 return data;
             } catch (error) {
+                console.error('Upload error:', error);
                 this.error = error.message;
                 this.isProcessing = false;
                 throw error;
@@ -56,6 +57,34 @@ export const usePdfStore = defineStore('pdf', {
             this.chunkCount = 0;
             this.isProcessed = false;
             this.error = null;
+        },
+
+        async checkServerStatus() {
+            try {
+                const response = await fetch('http://localhost:3000/api/status');
+                const data = await response.json();
+
+                if (data.ready && data.documentCount > 0) {
+                    this.updateStoreFromStatus(data);
+                }
+            } catch (error) {
+                console.error('Failed to check server status:', error);
+            }
+        },
+
+        updateStoreFromStatus(data) {
+            this.isProcessed = true;
+
+            if (data.metadata) {
+                this.fileName = data.metadata.filename;
+                this.pageCount = data.metadata.pageCount;
+                this.chunkCount = data.metadata.chunkCount;
+                this.fileSize = 0;
+                return;
+            }
+
+            this.fileName = 'Existing Knowledge Base';
+            this.chunkCount = data.documentCount;
         }
     }
 });

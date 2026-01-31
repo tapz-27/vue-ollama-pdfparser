@@ -17,13 +17,13 @@ Before running this application, you need to have:
 1. **Node.js** (v18 or higher)
 2. **Ollama** installed and running locally
 3. Required Ollama models:
-   - `llama3.2:3b` - For question answering
+   - `llama3.1` - For question answering
    - `nomic-embed-text` - For text embeddings
 
 ### Installing Ollama Models
 
 ```bash
-ollama pull llama3.2:3b
+ollama pull llama3.1
 ollama pull nomic-embed-text
 ```
 
@@ -65,6 +65,9 @@ Terminal 2 - Frontend dev server:
 npm run dev
 ```
 
+### Option 3: One-Click Start (Windows)
+Double-click the `start_app.bat` file in the root directory. This will launch both the server and the client in a new window.
+
 The application will be available at:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
@@ -74,7 +77,9 @@ The application will be available at:
 1. **Upload a PDF**: Click or drag a PDF file into the upload area
 2. **Wait for processing**: The PDF will be parsed, chunked, and embedded
 3. **Ask questions**: Type your question in the chat interface
-4. **View debug logs**: Click on the debug panel to see detailed operation logs
+4. **Control Generation**: Use the "Stop Generation" button to cancel a request
+5. **Clear History**: Use "Clear Chat" to reset the conversation
+6. **View Status**: Check the status panel for system readiness and document counts
 
 ## Architecture
 
@@ -85,20 +90,19 @@ The application will be available at:
 3. **Embedding Generation**: Each chunk is embedded using Ollama's nomic-embed-text model
 4. **Vector Storage**: Embeddings are stored in an in-memory vector store
 5. **Question Answering**: Questions are embedded and similar chunks are retrieved
-6. **Answer Generation**: Retrieved context is sent to llama3.2:3b for answer generation
+6. **Answer Generation**: Retrieved context is sent to llama3.1 for answer generation
 
 ### Tech Stack
 
 - **Frontend**: Vue 3 (Composition API), Pinia
 - **Backend**: Node.js, Express
 - **RAG Framework**: LangChain.js
-- **LLM**: Ollama (llama3.2:3b, nomic-embed-text)
+- **LLM**: Ollama (llama3.1, nomic-embed-text)
 - **Build Tool**: Vite
 
 ## Code Quality
 
 - Maximum nesting depth: 3 levels
-- No emojis in code or comments
 - Minimalist UI design
 - Comprehensive debug logging
 
@@ -115,7 +119,7 @@ vue-ollama-pdfparser/
 │   ├── components/
 │   │   ├── PdfUpload.vue    # PDF upload component
 │   │   ├── ChatInterface.vue # Q&A chat interface
-│   │   └── DebugPanel.vue   # Debug logging panel
+│   │   └── StatusPanel.vue   # Server status and metrics
 │   ├── stores/
 │   │   ├── pdfStore.js      # PDF state management
 │   │   ├── chatStore.js     # Chat state management
